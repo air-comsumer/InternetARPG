@@ -1,0 +1,177 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
+using UnityEngine;
+
+public class NetMgrAsync : SingletonMono<NetMgrAsync>
+{
+    private Socket socket;
+    private byte[] cacheBytes = new byte[1024*1024];
+    private int cacheNum = 0;
+    private Queue<BaseMsg> receiveQueue = new Queue<BaseMsg>();
+    private HeartMsg heartMsg = new HeartMsg();
+    private int SEND_HEART_MSG_TIME = 2;
+    protected override void Awake()
+    {
+        base.Awake();
+        DontDestroyOnLoad(gameObject);
+        InvokeRepeating("SendHeartMsg",0,SEND_HEART_MSG_TIME);
+    }
+    private void Update()
+    {
+        if (receiveQueue.Count > 0)
+        {
+            BaseMsg baseMsg = receiveQueue.Dequeue();
+            switch(baseMsg)
+            {
+                case QuitMsg msg:
+                    break;
+            }
+        }
+    }
+    private void SendHeartMsg()
+    {
+        if (socket != null && socket.Connected)
+        {
+            Send(heartMsg);
+        }
+    }
+    public void Connect(string ip,int port)
+    {
+        if (socket != null && socket.Connected)
+            return;
+        IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
+        socket = new Socket(AddressFamily.InterNetwork,SocketType.Stream, ProtocolType.Tcp);
+        SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+        args.RemoteEndPoint = iPEndPoint;
+        args.Completed += (socket, args) =>
+        {
+            if (args.SocketError == SocketError.Success)
+            {
+                SocketAsyncEventArgs receiveArgs = new SocketAsyncEventArgs();
+                receiveArgs.SetBuffer(cacheBytes, 0, cacheBytes.Length);
+                receiveArgs.Completed += ReceiveCallBack;
+                this.socket.ReceiveAsync(receiveArgs);
+            }
+            else
+            {
+                Debug.Log("连接失败"+ args.SocketError);
+            }
+        };
+        socket.ConnectAsync(args);
+
+    }
+
+    private void ReceiveCallBack(object sender, SocketAsyncEventArgs e)
+    {
+        if (e.SocketError == SocketError.Success)
+        {
+            HandleReceiveMsg(e.BytesTransferred);
+            e.SetBuffer(cacheNum, e.Buffer.Length - cacheNum);
+            if (socket != null && socket.Connected)
+                socket.ReceiveAsync(e);
+            else
+                Close();
+        }
+        else
+        {
+            Debug.Log("接受消息出错");
+            Close();
+        }
+    }
+    public void SendTest(byte[] bytes)
+    {
+        SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+        args.SetBuffer(bytes, 0, bytes.Length);
+        args.Completed += (socket, args) =>
+        {
+            if (args.SocketError != SocketError.Success)
+            {
+                Debug.Log("发送失败");
+                Close();
+            }
+        };
+        socket.SendAsync(args);
+    }
+    public void Send(BaseMsg msg)
+    {
+        if(socket != null&&socket.Connected)
+        {
+            byte[] bytes = msg.Writing();
+            SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+            args.SetBuffer(bytes, 0, bytes.Length);
+            args.Completed += (socket, args) =>
+            {
+                if (args.SocketError!=SocketError.Success)
+                {
+                    Debug.Log("发送失败");
+                    Close();
+                }
+            };
+            socket.SendAsync(args);
+        }
+
+    }
+    public void Close()
+    {
+        if(socket != null)
+        {
+            QuitMsg msg = new QuitMsg();
+            socket.Send(msg.Writing());
+            socket.Shutdown(SocketShutdown.Both);
+            socket.Disconnect(false);
+            socket.Close();
+            socket = null;
+        }
+    }
+
+    private void HandleReceiveMsg(int receiveNum)
+    {
+        int msgID = 0;
+        int msgLength = 0;
+        int nowIndex = 0;
+        cacheNum += receiveNum;
+        while (true)
+        {
+            msgLength = -1;
+            if (cacheNum - nowIndex >= 8)
+            {
+                msgID = BitConverter.ToInt32(cacheBytes,nowIndex);
+                nowIndex += 4;
+                msgLength = BitConverter.ToInt32(cacheBytes, nowIndex);
+                nowIndex += 4;
+            }
+            if (cacheNum - nowIndex >= msgLength && msgLength != -1)
+            {
+                BaseMsg baseMsg = null;
+                switch (msgID)
+                {
+                    case 0:
+                        break;
+                }
+                if (baseMsg != null)
+                    receiveQueue.Enqueue(baseMsg);
+                nowIndex += msgLength;
+                if (nowIndex == cacheNum)
+                {
+                    cacheNum = 0;
+                    break;
+                }
+            }
+            else
+            {
+                if (msgLength != -1)
+                    nowIndex -= 8;
+                Array.Copy(cacheBytes,nowIndex,cacheBytes,0,cacheNum - nowIndex);
+                cacheNum = cacheNum - nowIndex;
+                break;
+            }
+        }
+    }
+    private void OnDestroy()
+    {
+        Close();
+    }
+}
