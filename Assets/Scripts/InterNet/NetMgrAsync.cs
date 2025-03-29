@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class NetMgrAsync : SingletonMono<NetMgrAsync>
 {
@@ -13,6 +14,11 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
     private Queue<BaseMsg> receiveQueue = new Queue<BaseMsg>();
     private HeartMsg heartMsg = new HeartMsg();
     private int SEND_HEART_MSG_TIME = 2;
+    //消息监听表
+    //发送消息的时候传入委托然后在事件里面添加对应监听
+    public Dictionary<int,UnityAction<BaseMsg>> eventDict = new Dictionary<int,UnityAction<BaseMsg>>();
+    public Dictionary<int,UnityAction<BaseMsg>> onceDict = new Dictionary<int, UnityAction<BaseMsg>>();
+    public static int consoleNum = 15;//每帧处理num条消息
     protected override void Awake()
     {
         base.Awake();
@@ -21,13 +27,57 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
     }
     private void Update()
     {
-        if (receiveQueue.Count > 0)
+        for(int i=0;i<consoleNum;i++)
         {
-            BaseMsg baseMsg = receiveQueue.Dequeue();
-            switch(baseMsg)
+            if (receiveQueue.Count > 0)
             {
-                case QuitMsg msg:
-                    break;
+                BaseMsg baseMsg = receiveQueue.Dequeue();
+                if (eventDict.ContainsKey(baseMsg.GetID()))
+                {
+                    eventDict[baseMsg.GetID()].Invoke(baseMsg);
+                }
+                if(onceDict.ContainsKey(baseMsg.GetID()))
+                {
+                    onceDict[baseMsg.GetID()].Invoke(baseMsg);
+                    onceDict[baseMsg.GetID()] = null;
+                    onceDict.Remove(baseMsg.GetID());
+                }
+            }
+        }
+    }
+    public void AddListener(int id, UnityAction<BaseMsg> action)
+    {
+        if (eventDict.ContainsKey(id))
+            eventDict[id] += action;
+        else
+            eventDict.Add(id, action);
+    }
+    public void AddOnceListener(int id , UnityAction<BaseMsg> action)
+    {
+        if(onceDict.ContainsKey(id))
+            onceDict[id] += action;
+        else
+            onceDict.Add(id, action);
+    }
+    public void RemoveListener(int id, UnityAction<BaseMsg> action)
+    {
+        if (!eventDict.ContainsKey(id))
+        {
+            eventDict[id] -= action;
+            if (eventDict[id] == null)
+            {
+                eventDict.Remove(id);
+            }
+        }
+    }
+    public void RemoveOnceListener(int id,UnityAction<BaseMsg> action)
+    {
+        if (!onceDict.ContainsKey(id))
+        {
+            onceDict[id] -= action;
+            if (onceDict[id] == null)
+            {
+                onceDict.Remove(id);
             }
         }
     }
@@ -68,7 +118,10 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
     {
         if (e.SocketError == SocketError.Success)
         {
-            HandleReceiveMsg(e.BytesTransferred);
+            lock(receiveQueue)
+            {
+                HandleReceiveMsg(e.BytesTransferred);
+            }
             e.SetBuffer(cacheNum, e.Buffer.Length - cacheNum);
             if (socket != null && socket.Connected)
                 socket.ReceiveAsync(e);
@@ -95,16 +148,36 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
         };
         socket.SendAsync(args);
     }
-    public void Send(BaseMsg msg)
+    public void Send(BaseMsg msg,UnityAction<BaseMsg> action)
     {
         if(socket != null&&socket.Connected)
         {
+            AddOnceListener(msg.GetID(), action);
             byte[] bytes = msg.Writing();
             SocketAsyncEventArgs args = new SocketAsyncEventArgs();
             args.SetBuffer(bytes, 0, bytes.Length);
             args.Completed += (socket, args) =>
             {
                 if (args.SocketError!=SocketError.Success)
+                {
+                    Debug.Log("发送失败");
+                    Close();
+                }
+            };
+            socket.SendAsync(args);
+        }
+
+    }
+    public void Send(BaseMsg msg)
+    {
+        if (socket != null && socket.Connected)
+        {
+            byte[] bytes = msg.Writing();
+            SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+            args.SetBuffer(bytes, 0, bytes.Length);
+            args.Completed += (socket, args) =>
+            {
+                if (args.SocketError != SocketError.Success)
                 {
                     Debug.Log("发送失败");
                     Close();

@@ -14,8 +14,8 @@ public class GameManager : SingletonMono<GameManager>
     // Start is called before the first frame update
     void Start()
     {
-
         NetMgrAsync.Instance().SendTest(Encoding.UTF8.GetBytes("你好世界，再见世界"));
+        Walk.Instance().StartGame("高潇屹");
     }
 
     // Update is called once per frame
