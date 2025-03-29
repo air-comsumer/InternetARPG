@@ -221,7 +221,17 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
                 BaseMsg baseMsg = null;
                 switch (msgID)
                 {
-                    case 0:
+                    case 1002:
+                        baseMsg = new UpdateInfoServerMsg();
+                        baseMsg.Reading(cacheBytes, nowIndex);
+                        break;
+                    case 1001:
+                        baseMsg = new GetListMsg();
+                        baseMsg.Reading(cacheBytes, nowIndex);
+                        break;
+                    case 1004:
+                        baseMsg = new PlayerLeave();
+                        baseMsg.Reading(cacheBytes, nowIndex);
                         break;
                 }
                 if (baseMsg != null)
