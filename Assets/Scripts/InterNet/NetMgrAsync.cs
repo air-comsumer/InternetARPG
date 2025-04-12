@@ -32,7 +32,25 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
             if (receiveQueue.Count > 0)
             {
                 BaseMsg baseMsg = receiveQueue.Dequeue();
-                if (eventDict.ContainsKey(baseMsg.GetID()))
+                if(baseMsg.GetID()==2003)
+                {
+                    Debug.Log("房间列表包");
+                }
+                if(baseMsg.GetID() ==888)
+                {
+                    Debug.Log("bool包");
+                    if(eventDict.ContainsKey((baseMsg as BoolMsg).id))
+                    {
+                        eventDict[(baseMsg as BoolMsg).id].Invoke(baseMsg);
+                    }
+                    if(onceDict.ContainsKey((baseMsg as BoolMsg).id))
+                    {
+                        onceDict[(baseMsg as BoolMsg).id].Invoke(baseMsg);
+                        onceDict[(baseMsg as BoolMsg).id] = null;
+                        onceDict.Remove((baseMsg as BoolMsg).id);
+                    }
+                }
+                if(eventDict.ContainsKey(baseMsg.GetID()))
                 {
                     eventDict[baseMsg.GetID()].Invoke(baseMsg);
                 }
@@ -219,6 +237,7 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
             if (cacheNum - nowIndex >= msgLength && msgLength != -1)
             {
                 BaseMsg baseMsg = null;
+                Debug.Log(msgID);
                 switch (msgID)
                 {
                     case 1002:
@@ -233,6 +252,23 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
                         baseMsg = new PlayerLeave();
                         baseMsg.Reading(cacheBytes, nowIndex);
                         break;
+                    case 888:
+                        baseMsg = new BoolMsg();
+                        baseMsg.Reading(cacheBytes, nowIndex);
+                        break;
+                    case 2003:
+                        baseMsg = new GetRoomListServerMsg();
+                        baseMsg.Reading(cacheBytes, nowIndex);
+                        break;
+                    case 2004:
+                        baseMsg = new CreateRoomServerMsg();
+                        baseMsg.Reading(cacheBytes, nowIndex);
+                        break;
+                    case 2006:
+                        baseMsg = new GetRoomInfoServerMsg();
+                        baseMsg.Reading(cacheBytes, nowIndex);
+                        break;
+
                 }
                 if (baseMsg != null)
                     receiveQueue.Enqueue(baseMsg);

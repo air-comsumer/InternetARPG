@@ -57,9 +57,9 @@ public class Walk : SingletonMono<Walk>
         AddPlayer(id, pos);
         //同步
         SendPos();
-        NetMgrAsync.Instance().Send(new GetListClientMsg(),GetList);//发送获取所有角色信息位置的请求
-        NetMgrAsync.Instance().AddListener(1002,UpdateInfo);//添加到字典中，收到回信会自动执行
-        NetMgrAsync.Instance().AddListener(1004, PlayerLeave);
+        NetMgrAsync.Instance.Send(new GetListClientMsg(),GetList);//发送获取所有角色信息位置的请求
+        NetMgrAsync.Instance.AddListener(1002,UpdateInfo);//添加到字典中，收到回信会自动执行
+        NetMgrAsync.Instance.AddListener(1004, PlayerLeave);
     }
     /// <summary>
     /// 向服务器发送自己的位置
@@ -73,7 +73,7 @@ public class Walk : SingletonMono<Walk>
         updateInfo.x = pos.x;
         updateInfo.y = pos.y;
         updateInfo.z = pos.z;
-        NetMgrAsync.Instance().Send(updateInfo);
+        NetMgrAsync.Instance.Send(updateInfo);
     }
     /// <summary>
     /// 更新所有角色位置

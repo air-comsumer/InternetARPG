@@ -15,6 +15,7 @@ public class PlayerData : BaseData
         return 4+4+4+4+4+Encoding.UTF8.GetBytes(id).Length;
     }
 
+
     public override int Reading(byte[] bytes, int beginIndex = 0)
     {
         int index = beginIndex;
