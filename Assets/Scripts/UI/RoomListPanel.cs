@@ -7,7 +7,7 @@ public class RoomListPanel : BasePanel
 {
     public GameObject roomPrefab;
     public RectTransform content;
-    private int myRoomID = -1;
+    public int myRoomID = -1;
     private void Start()
     {
         UIManager.Instance.AddPanel("RoomListPanel", this);

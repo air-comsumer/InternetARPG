@@ -215,6 +215,7 @@ MonoBehaviour:
   - {fileID: 1670011162}
   - {fileID: 234080929}
   - {fileID: 861649756}
+  playerFightPrefab: {fileID: 0}
 --- !u!1 &18534688
 GameObject:
   m_ObjectHideFlags: 0
@@ -2070,6 +2071,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roomPrefab: {fileID: 3287862843782064932, guid: 70fa14d0a97e24c4a9f45b3e3e12ee05, type: 3}
   content: {fileID: 1205420347}
+  myRoomID: -1
 --- !u!1001 &1670011160
 PrefabInstance:
   m_ObjectHideFlags: 0

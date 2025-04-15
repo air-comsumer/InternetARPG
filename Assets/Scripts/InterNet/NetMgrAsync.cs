@@ -79,7 +79,7 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
     }
     public void RemoveListener(int id, UnityAction<BaseMsg> action)
     {
-        if (!eventDict.ContainsKey(id))
+        if (eventDict.ContainsKey(id))
         {
             eventDict[id] -= action;
             if (eventDict[id] == null)
@@ -267,6 +267,9 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
                     case 2006:
                         baseMsg = new GetRoomInfoServerMsg();
                         baseMsg.Reading(cacheBytes, nowIndex);
+                        break;
+                    case 2008:
+                        baseMsg = new StartFightServerMsg();
                         break;
 
                 }

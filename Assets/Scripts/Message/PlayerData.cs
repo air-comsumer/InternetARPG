@@ -9,10 +9,10 @@ public class PlayerData : BaseData
     public float x;
     public float y;
     public float z;
-    public int score;
+    public bool isOwner;
     public override int GetBytesNum()
     {
-        return 4+4+4+4+4+Encoding.UTF8.GetBytes(id).Length;
+        return 4 + 4 + 4 + 4 + 1 + Encoding.UTF8.GetBytes(id).Length;
     }
 
 
@@ -23,21 +23,21 @@ public class PlayerData : BaseData
         x = ReadFloat(bytes, ref index);
         y = ReadFloat(bytes, ref index);
         z = ReadFloat(bytes, ref index);
-        score = ReadInt(bytes, ref index);
-        return index-beginIndex;
+        isOwner = ReadBool(bytes, ref index);
+        return index - beginIndex;
     }
 
     public override byte[] Writing()
     {
-        int index =0; 
+        int index = 0;
         byte[] bytes = new byte[GetBytesNum()];
-        WriteString(bytes,id,ref index);
-        WriteFloat(bytes,x,ref index);
-        WriteFloat(bytes,y,ref index);
-        WriteFloat(bytes,z,ref index);
-        WriteInt(bytes,score,ref index);
+        WriteString(bytes, id, ref index);
+        WriteFloat(bytes, x, ref index);
+        WriteFloat(bytes, y, ref index);
+        WriteFloat(bytes, z, ref index);
+        WriteBool(bytes, isOwner, ref index);
         return bytes;
     }
 
-    
+
 }

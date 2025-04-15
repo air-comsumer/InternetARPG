@@ -10,6 +10,8 @@ using UnityEngine.UI;
 
 public class GameManager : SingletonMono<GameManager>
 {
+    public string playerName;
+    private string lastName;
     protected override void Awake()
     {
         base.Awake();
@@ -50,6 +52,7 @@ public class GameManager : SingletonMono<GameManager>
             LoginMsg loginMsg = new LoginMsg() {username = startPanel.GetControl<InputField>("IDInputField").text 
             ,password = startPanel.GetControl<InputField>("PWInputField").text};
             Debug.Log("用户名"+loginMsg.username+"密码"+loginMsg.password);
+            lastName = loginMsg.username;
             NetMgrAsync.Instance.Send(loginMsg,LoginHandle);
         }
     }
@@ -62,6 +65,7 @@ public class GameManager : SingletonMono<GameManager>
             //登录成功
             //Walk.Instance.StartGame(msg.id);
             EventCenter.Instance.EventTrigger<string, UnityAction>("ChangeScene", "SelectRoom",null);
+            playerName = lastName;
         }
         else
         {
