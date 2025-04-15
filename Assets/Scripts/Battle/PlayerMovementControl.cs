@@ -47,6 +47,12 @@ public class PlayerMovementControl : CharacterMovementControlBase
             Debug.Log("×ªÍä");
             transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y,
            _rotationAngle, ref _angleVelocity, _rotationSmoothTime);
+            PlayerChangeMessage playerChangeMessage = new PlayerChangeMessage();
+            playerChangeMessage.rotY = transform.eulerAngles.y;
+            playerChangeMessage.rotationAngle = _rotationAngle;
+            playerChangeMessage.rotationSmoothTime = _rotationSmoothTime;
+            playerChangeMessage.playerID = GameManager.Instance.playerName;
+            NetMgrAsync.Instance.Send(playerChangeMessage);
             _characterTargetDirection = Quaternion.Euler(0f, _rotationAngle, 0f) * Vector3.forward;
         }
         //_animator.SetFloat(AnimationID.DetalAngleID, DevelopmentToos.GetDeltaAngle(transform, _characterTargetDirection.normalized));
@@ -55,15 +61,18 @@ public class PlayerMovementControl : CharacterMovementControlBase
     private void UpdateAnimation()
     {
         if (!_characterOnGround) return;
+        PlayerAnimeMsg playerAnimeMsg = new PlayerAnimeMsg();
         _animator.SetBool(AnimationID.HasInputID, GameInputManager.Instance.Movement != Vector2.zero);
-
+        playerAnimeMsg.HasInputID = _animator.GetBool(AnimationID.HasInputID);
         if (_animator.GetBool(AnimationID.HasInputID))
         {
             if (GameInputManager.Instance.Run)
             {
                 _animator.SetBool(AnimationID.RunID, true);
+                playerAnimeMsg.RunID = true;
             }
             _animator.SetFloat(AnimationID.MovementID, (_animator.GetBool(AnimationID.RunID) ? 2f : GameInputManager.Instance.Movement.sqrMagnitude), 0.25f, Time.deltaTime);
+
         }
         else
         {
@@ -71,8 +80,11 @@ public class PlayerMovementControl : CharacterMovementControlBase
             if (_animator.GetFloat(AnimationID.MovementID) < 0.2f)
             {
                 _animator.SetBool(AnimationID.RunID, false);
+                playerAnimeMsg.RunID = false;
             }
         }
+        playerAnimeMsg.MovementID = _animator.GetFloat(AnimationID.MovementID);
+        NetMgrAsync.Instance.Send(playerAnimeMsg);
     }
 
 

@@ -58,11 +58,13 @@ public class RoomPanel : BasePanel
                 GameObject playerObj = Instantiate(playerFightPrefab);
                 playerObj.transform.position = new Vector3(player.x, player.y, player.z);
                 playerObj.GetComponentInChildren<TextMeshPro>().text = player.id;
+                playerObj.GetComponent<AnoterPlayerController>().playerID = player.id;
             }
             else
             {
                 //·¿Ö÷
                 GameObject playerobj = GameObject.FindGameObjectWithTag("Player");
+                playerobj.transform.position = new Vector3(player.x, player.y, player.z);
                 playerobj.GetComponent<PlayerMovementControl>()._playerName.text = player.id;
             }
 

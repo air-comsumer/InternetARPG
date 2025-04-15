@@ -272,6 +272,18 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
                         baseMsg = new StartFightServerMsg();
                         baseMsg.Reading(cacheBytes, nowIndex);
                         break;
+                    case 2009:
+                        baseMsg = new PlayerChangeMessage();
+                        baseMsg.Reading(cacheBytes, nowIndex);
+                        break;
+                    case 2010:
+                        baseMsg = new PlayerAnimeMsg();
+                        baseMsg.Reading(cacheBytes, nowIndex);
+                        break;
+                    case 2011:
+                        baseMsg = new PlayerMoveMsg();
+                        baseMsg.Reading(cacheBytes, nowIndex);
+                        break;
 
                 }
                 if (baseMsg != null)
