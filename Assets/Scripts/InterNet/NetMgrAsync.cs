@@ -270,6 +270,7 @@ public class NetMgrAsync : SingletonMono<NetMgrAsync>
                         break;
                     case 2008:
                         baseMsg = new StartFightServerMsg();
+                        baseMsg.Reading(cacheBytes, nowIndex);
                         break;
 
                 }

@@ -47,6 +47,7 @@ public class RoomPanel : BasePanel
     }
     private void AfterSceneLoad()
     {
+        Debug.Log("这对吗?");
         if (startFightServerMsg == null) return;
         foreach (var player in startFightServerMsg.players)
         {
@@ -61,8 +62,8 @@ public class RoomPanel : BasePanel
             else
             {
                 //房主
-                GameObject playerobj = GameObject.Find("Player");
-                playerobj.GetComponentInChildren<TextMeshPro>().text = player.id;
+                GameObject playerobj = GameObject.FindGameObjectWithTag("Player");
+                playerobj.GetComponent<PlayerMovementControl>()._playerName.text = player.id;
             }
 
         }

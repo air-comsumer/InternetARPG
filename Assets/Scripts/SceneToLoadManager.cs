@@ -21,7 +21,15 @@ public class SceneToLoadManager : SingletonMono<SceneToLoadManager>
     public async void ChangeScene(string targetSceneName,UnityAction action=null)
     {
         await UnloadSceneTask();
-        await LoadSceneTask(targetSceneName);
+        if(action != null)
+        {
+            await LoadSceneTask(targetSceneName,action);
+        }
+        else
+        {
+            await LoadSceneTask(targetSceneName);
+        }
+
     }
     private async Awaitable UnloadSceneTask()
     {

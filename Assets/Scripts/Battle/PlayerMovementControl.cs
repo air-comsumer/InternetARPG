@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class PlayerMovementControl : CharacterMovementControlBase
 {
     private float _rotationAngle;
     private float _angleVelocity = 0f;
+    public TextMeshPro _playerName;
     [SerializeField] private float _rotationSmoothTime;
     public Transform _mainCamera;
     //½Å²½Éù
