@@ -4,7 +4,19 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Presistance.unity
+    guid: c2dfc208bf0a0a6409b1bc96d7977f7e
+  - enabled: 1
+    path: Assets/Scenes/SampleScene.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/Battle.unity
+    guid: 6af85379a9e5a6a4c8a9eb6d78e4f313
+  - enabled: 1
+    path: Assets/Scenes/SelectRoom.unity
+    guid: 2d79e850fe0cc8644ad33061235b0756
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: a9426eaa777820b4990feb9a731b7c4f, type: 2}
   m_UseUCBPForAssetBundles: 0

@@ -51,12 +51,6 @@ public class CharacterMovementControlBase : MonoBehaviour
     protected void UpdateCharacterMovedirection(Vector3 direction)
     {
         _movedirection = StopResetDirection(direction);
-        PlayerMoveMsg playerMoveMsg = new PlayerMoveMsg();
-        playerMoveMsg.id = GameManager.Instance.playerName;
-        playerMoveMsg.posX = _movedirection.x;
-        playerMoveMsg.posY = _movedirection.y;
-        playerMoveMsg.posZ = _movedirection.z;
-        NetMgrAsync.Instance.Send(playerMoveMsg);
         _control.Move(_movedirection * Time.deltaTime);
     }
 

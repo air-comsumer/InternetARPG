@@ -3438,7 +3438,7 @@ GameObject:
   - component: {fileID: 5591169951862982247}
   - component: {fileID: 1842863242597866333}
   - component: {fileID: 240039303955211978}
-  - component: {fileID: 2639331371461238620}
+  - component: {fileID: 8350882572966121412}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -3603,7 +3603,7 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 1842863242597866333}
   m_maskType: 0
---- !u!114 &2639331371461238620
+--- !u!114 &8350882572966121412
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5270,6 +5270,10 @@ MonoBehaviour:
   _whatIsGround:
     serializedVersion: 2
     m_Bits: 8
+  playerID: 
+  posX: 0
+  posY: 0
+  posZ: 0
 --- !u!1 &8197991823532905843
 GameObject:
   m_ObjectHideFlags: 0

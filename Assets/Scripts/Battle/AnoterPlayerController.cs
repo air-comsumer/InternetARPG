@@ -6,32 +6,39 @@ using UnityEngine;
 public class AnoterPlayerController : CharacterMovementControlBase
 {
     public string playerID;
-    private float _rotationAngle;
+    private float rotX;
     private float rotY;
-    private float _angleVelocity = 0f;
-    private float rotationSmoothTime;
-    private bool isRotate;
+    private float rotZ;
+    private bool isRotate = false;
     [Header("动画参数")]
-    private bool isAnimal;
+    private bool isAnimal = false;
     private bool HasInput;
     private bool Run;
     private float Move;
     [Header("移动参数")]
-    private float posX;
-    private float posY;
-    private float posZ;
+    [SerializeField]private Vector3 pos;
     private bool isMove;
     protected override void Awake()
     {
         base.Awake();
+
+    }
+    protected override void Start()
+    {
+        base.Start();
+        pos = new Vector3(transform.position.x,
+            transform.position.y - _groundDetectionPositionOffset, transform.position.z);
         NetMgrAsync.Instance.AddListener(2009, OnPlayerRotate);
         NetMgrAsync.Instance.AddListener(2010, OnPlayerAnim);
         NetMgrAsync.Instance.AddListener(2011, OnPlayerMove);
     }
     protected override void OnAnimatorMove()
     {
-        _animator.ApplyBuiltinRootMotion();
-        _control.Move(new Vector3(posX, posY, posZ) * Time.deltaTime);
+        if (isMove)
+        {
+            transform.position = pos;
+            isMove = false;
+        }
     }
     private void OnDestroy()
     {
@@ -41,18 +48,6 @@ public class AnoterPlayerController : CharacterMovementControlBase
     }
     private void LateUpdate()
     {
-        UpdateAnimation();
-        if (isRotate)
-        {
-            transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(rotY,
-_rotationAngle, ref _angleVelocity, rotationSmoothTime);
-            isRotate = false;
-        }
-
-
-    }
-    private void UpdateAnimation()
-    {
         if(isAnimal)
         {
             _animator.SetBool(AnimationID.HasInputID, HasInput);
@@ -60,15 +55,18 @@ _rotationAngle, ref _angleVelocity, rotationSmoothTime);
             _animator.SetFloat(AnimationID.MovementID, Move);
             isAnimal = false;
         }
+        if(isRotate)
+        {
+            transform.eulerAngles = new Vector3(rotX, rotY, rotZ);
+            isRotate = false;
+        }
     }
     private void OnPlayerMove(BaseMsg arg0)
     {
         Debug.Log("收到移动消息");
         var playerMove = arg0 as PlayerMoveMsg;
         if (playerMove.id != playerID) return;
-        posX = playerMove.posX;
-        posY = playerMove.posY;
-        posZ = playerMove.posZ;
+        pos = new Vector3(playerMove.posX, playerMove.posY, playerMove.posZ);//预测新位置
         isMove = true;
     }
 
@@ -88,9 +86,10 @@ _rotationAngle, ref _angleVelocity, rotationSmoothTime);
         Debug.Log("收到旋转消息");
         var playerRotate = arg0 as PlayerChangeMessage;
         if (playerRotate.playerID != playerID) return;
-        _rotationAngle = playerRotate.rotationAngle;
+        
         rotY = playerRotate.rotY;
-        rotationSmoothTime = playerRotate.rotationSmoothTime;
+        rotX = playerRotate.rotX;
+        rotZ = playerRotate.rotZ;
         isRotate = true;
     }
 }

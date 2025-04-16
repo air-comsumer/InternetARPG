@@ -6,14 +6,14 @@ using UnityEngine;
 public class PlayerChangeMessage : BaseMsg
 {
     public string playerID;
+    public float rotX;
     public float rotY;
-    public float rotationAngle;
-    public float rotationSmoothTime;
+    public float rotZ;
     public override int GetBytesNum()
     {
-        return 4+4+
-            4+Encoding.UTF8.GetBytes(playerID).Length
-            +4+4+4;
+        return 4 + 4 +
+            4 + Encoding.UTF8.GetBytes(playerID).Length
+            + 4 + 4 + 4;
     }
 
     public override int GetID()
@@ -25,22 +25,22 @@ public class PlayerChangeMessage : BaseMsg
     {
         int index = beginIndex;
         playerID = ReadString(bytes, ref index);
+        rotX = ReadFloat(bytes, ref index);
         rotY = ReadFloat(bytes, ref index);
-        rotationAngle = ReadFloat(bytes, ref index);
-        rotationSmoothTime = ReadFloat(bytes, ref index);
-        return index-beginIndex;
+        rotZ = ReadFloat(bytes, ref index);
+        return index - beginIndex;
     }
 
     public override byte[] Writing()
     {
         int index = 0;
         byte[] bytes = new byte[GetBytesNum()];
-        WriteInt(bytes,GetID(), ref index);
-        WriteInt(bytes,GetBytesNum()-8, ref index);
+        WriteInt(bytes, GetID(), ref index);
+        WriteInt(bytes, GetBytesNum() - 8, ref index);
         WriteString(bytes, playerID, ref index);
+        WriteFloat(bytes, rotX, ref index);
         WriteFloat(bytes, rotY, ref index);
-        WriteFloat(bytes, rotationAngle, ref index);
-        WriteFloat(bytes, rotationSmoothTime, ref index);
+        WriteFloat(bytes, rotZ, ref index);
         return bytes;
     }
 

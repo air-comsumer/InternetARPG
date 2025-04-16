@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -10,6 +11,8 @@ public class PlayerMovementControl : CharacterMovementControlBase
     public TextMeshPro _playerName;
     [SerializeField] private float _rotationSmoothTime;
     public Transform _mainCamera;
+    private float SEND_MOVE_MSG_TIME = 0.2f;
+    [SerializeField]private float lastSendMoveMsgTime;
     //脚步声
     private float _nextFootTime;
     [SerializeField] private float _slowFootTime;
@@ -19,10 +22,39 @@ public class PlayerMovementControl : CharacterMovementControlBase
     {
         base.Awake();
     }
-    //protected override void OnAnimatorMove()
-    //{
-    //    base.OnAnimatorMove();
-    //}
+    protected override void Start()
+    {
+        base.Start();
+
+    }
+    protected override void OnAnimatorMove()
+    {
+        base.OnAnimatorMove();
+        
+    }
+    protected override void Update()
+    {
+        base.Update();
+        Debug.Log("发送移动消息");
+        PlayerMoveMsg playerMoveMsg = new PlayerMoveMsg();
+        playerMoveMsg.id = GameManager.Instance.playerName;
+        playerMoveMsg.posX = transform.position.x;
+        playerMoveMsg.posY = transform.position.y;
+        playerMoveMsg.posZ = transform.position.z;
+        PlayerChangeMessage playerChangeMessage = new PlayerChangeMessage();
+        playerChangeMessage.playerID = GameManager.Instance.playerName;
+        playerChangeMessage.rotX = transform.eulerAngles.x;
+        playerChangeMessage.rotY = transform.eulerAngles.y;
+        playerChangeMessage.rotZ = transform.eulerAngles.z;
+        PlayerAnimeMsg playerAnimeMsg = new PlayerAnimeMsg();
+        playerAnimeMsg.id = GameManager.Instance.playerName;
+        playerAnimeMsg.MovementID = _animator.GetFloat(AnimationID.MovementID);
+        playerAnimeMsg.RunID = _animator.GetBool(AnimationID.RunID);
+        playerAnimeMsg.HasInputID = _animator.GetBool(AnimationID.HasInputID);
+        NetMgrAsync.Instance.Send(playerMoveMsg);
+        NetMgrAsync.Instance.Send(playerChangeMessage);
+        NetMgrAsync.Instance.Send(playerAnimeMsg);
+    }
     private void LateUpdate()
     {
         UpdateAnimation();
@@ -47,12 +79,6 @@ public class PlayerMovementControl : CharacterMovementControlBase
             Debug.Log("转弯");
             transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y,
            _rotationAngle, ref _angleVelocity, _rotationSmoothTime);
-            PlayerChangeMessage playerChangeMessage = new PlayerChangeMessage();
-            playerChangeMessage.rotY = transform.eulerAngles.y;
-            playerChangeMessage.rotationAngle = _rotationAngle;
-            playerChangeMessage.rotationSmoothTime = _rotationSmoothTime;
-            playerChangeMessage.playerID = GameManager.Instance.playerName;
-            NetMgrAsync.Instance.Send(playerChangeMessage);
             _characterTargetDirection = Quaternion.Euler(0f, _rotationAngle, 0f) * Vector3.forward;
         }
         //_animator.SetFloat(AnimationID.DetalAngleID, DevelopmentToos.GetDeltaAngle(transform, _characterTargetDirection.normalized));
@@ -61,15 +87,18 @@ public class PlayerMovementControl : CharacterMovementControlBase
     private void UpdateAnimation()
     {
         if (!_characterOnGround) return;
-        PlayerAnimeMsg playerAnimeMsg = new PlayerAnimeMsg();
         _animator.SetBool(AnimationID.HasInputID, GameInputManager.Instance.Movement != Vector2.zero);
-        playerAnimeMsg.HasInputID = _animator.GetBool(AnimationID.HasInputID);
+
         if (_animator.GetBool(AnimationID.HasInputID))
         {
             if (GameInputManager.Instance.Run)
             {
                 _animator.SetBool(AnimationID.RunID, true);
-                playerAnimeMsg.RunID = true;
+ 
+            }
+            else
+            {
+
             }
             _animator.SetFloat(AnimationID.MovementID, (_animator.GetBool(AnimationID.RunID) ? 2f : GameInputManager.Instance.Movement.sqrMagnitude), 0.25f, Time.deltaTime);
 
@@ -80,11 +109,15 @@ public class PlayerMovementControl : CharacterMovementControlBase
             if (_animator.GetFloat(AnimationID.MovementID) < 0.2f)
             {
                 _animator.SetBool(AnimationID.RunID, false);
-                playerAnimeMsg.RunID = false;
+
+            }
+            else
+            {
+
             }
         }
-        playerAnimeMsg.MovementID = _animator.GetFloat(AnimationID.MovementID);
-        NetMgrAsync.Instance.Send(playerAnimeMsg);
+
+        //NetMgrAsync.Instance.Send(playerAnimeMsg);
     }
 
 

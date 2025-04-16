@@ -15,7 +15,8 @@ public class GameManager : SingletonMono<GameManager>
     protected override void Awake()
     {
         base.Awake();
-        NetMgrAsync.Instance.Connect("127.0.0.1", 12345);
+        SceneToLoadManager.Instance.AddScene("SampleScene", null);
+        NetMgrAsync.Instance.Connect("192.168.3.57", 12345);
     }
     // Start is called before the first frame update
     void Start()
@@ -33,7 +34,11 @@ public class GameManager : SingletonMono<GameManager>
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            // ÍË³öÓÎÏ·
+            Application.Quit();
+        }
     }
     private void OnDestroy()
     {

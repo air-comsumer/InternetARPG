@@ -18,6 +18,17 @@ public class SceneToLoadManager : SingletonMono<SceneToLoadManager>
     {
         EventCenter.Instance.RemoveEventListener<string,UnityAction>("ChangeScene", ChangeScene);
     }
+    public async void AddScene(string targetSceneName, UnityAction action = null)
+    {
+        if (action != null)
+        {
+            await LoadSceneTask(targetSceneName, action);
+        }
+        else
+        {
+            await LoadSceneTask(targetSceneName);
+        }
+    }
     public async void ChangeScene(string targetSceneName,UnityAction action=null)
     {
         await UnloadSceneTask();
